@@ -1,0 +1,101 @@
+<section class="application" id="application">
+  <div class="container application-container">
+
+    <!-- Desktop image (hidden on tablet/mobile) -->
+    <div class="application-image-wrapper">
+      <img
+        src="./images/application/application-desktop.jpg"
+        alt="Student during online English lesson"
+        class="application-image"
+      >
+      <p class="application-image-text">
+        1000 of our online English language lessons!<br>
+        A journey full of discovery, growth, and unforgettable moments.
+      </p>
+    </div>
+
+    <!-- Form -->
+    <div class="application-form-wrapper">
+      <h2 class="application-title">Leave an application</h2>
+
+      <p class="application-subtitle">
+        Please use the form below to contact us. Enter your name, email, and message and we'll get back to you shortly.
+      </p>
+
+      <form class="application-form">
+        <label class="application-label">
+          <span class="application-text">Name</span>
+          <input
+            type="text"
+            name="name"
+            class="application-input"
+            placeholder="Enter your name"
+            required
+          >
+        </label>
+
+        <label class="application-label">
+          <span class="application-text">Email</span>
+          <input
+            type="email"
+            name="email"
+            class="application-input"
+            placeholder="Enter your email"
+            required
+          >
+        </label>
+
+        <label class="application-label">
+          <span class="application-text">Phone</span>
+          <input
+            type="tel"
+            name="phone"
+            class="application-input"
+            placeholder="Enter your phone"
+            required
+          >
+        </label>
+
+        <label class="application-label">
+          <span class="application-text">Comment</span>
+          <textarea
+            name="comment"
+            class="application-textarea"
+            placeholder="Your message"
+          ></textarea>
+        </label>
+
+        <fieldset class="application-fieldset">
+          <legend class="application-legend">Choose a teacher</legend>
+
+          <label class="application-radio">
+            <input type="radio" name="teacher" value="Maria" checked >
+            <span>Maria</span>
+          </label>
+
+          <label class="application-radio">
+            <input type="radio" name="teacher" value="Artem" >
+            <span>Artem</span>
+          </label>
+
+          <label class="application-radio">
+            <input type="radio" name="teacher" value="Ilona" >
+            <span>Ilona</span>
+          </label>
+
+          <label class="application-radio">
+            <input type="radio" name="teacher" value="Volodymyr" >
+            <span>Volodymyr</span>
+          </label>
+        </fieldset>
+
+        <button type="submit" class="application-submit">Send</button>
+
+        <p class="application-privacy">
+          By clicking on “Send” button, you agree to our Privacy Policy,
+          and allow Promodo to use this information for marketing purposes.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
