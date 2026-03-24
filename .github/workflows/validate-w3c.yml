@@ -66,6 +66,18 @@ jobs:
           fi
 
           for css_file in "${css_files[@]}"; do
+            echo "Checking source CSS file: $css_file"
+
+            if [ ! -s "${css_file}" ]; then
+              echo "Skipping empty file: ${css_file}"
+              continue
+            fi
+
+            if ! grep -q '[^[:space:]]' "${css_file}"; then
+              echo "Skipping whitespace-only file: ${css_file}"
+              continue
+            fi
+
             echo "Validating source CSS file: $css_file"
 
             response_file="$(mktemp)"
@@ -77,7 +89,13 @@ jobs:
               -o "${response_file}"
 
             if [ ! -s "${response_file}" ]; then
-              echo "Empty response from W3C CSS Validator"
+              echo "Empty response from W3C CSS Validator for ${css_file}"
+              exit 1
+            fi
+
+            if ! python3 -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "${response_file}" >/dev/null 2>&1; then
+              echo "Invalid JSON response from W3C CSS Validator for ${css_file}"
+              cat "${response_file}"
               exit 1
             fi
 
@@ -174,6 +192,18 @@ jobs:
           fi
 
           for css_file in "${css_files[@]}"; do
+            echo "Checking built CSS file: $css_file"
+
+            if [ ! -s "${css_file}" ]; then
+              echo "Skipping empty file: ${css_file}"
+              continue
+            fi
+
+            if ! grep -q '[^[:space:]]' "${css_file}"; then
+              echo "Skipping whitespace-only file: ${css_file}"
+              continue
+            fi
+
             echo "Validating built CSS file: $css_file"
 
             response_file="$(mktemp)"
@@ -185,7 +215,13 @@ jobs:
               -o "${response_file}"
 
             if [ ! -s "${response_file}" ]; then
-              echo "Empty response from W3C CSS Validator"
+              echo "Empty response from W3C CSS Validator for ${css_file}"
+              exit 1
+            fi
+
+            if ! python3 -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "${response_file}" >/dev/null 2>&1; then
+              echo "Invalid JSON response from W3C CSS Validator for ${css_file}"
+              cat "${response_file}"
               exit 1
             fi
 
