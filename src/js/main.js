@@ -1,3 +1,3 @@
-import { Carousel } from './carousel';
+import { Carousel } from './carousel/index.js';
 
 Carousel.initAll();

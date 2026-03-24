@@ -1,17 +1,11 @@
 import EmblaCarousel from 'embla-carousel';
-
-const DEFAULT_OPTIONS = Object.freeze({
-  loop: true,
-  align: 'start',
-  dragFree: false,
-  containScroll: 'trimSnaps',
-  slidesMobile: 1,
-  slidesTablet: 2,
-  slidesDesktop: 3,
-});
-
-const TABLET_BREAKPOINT = 768;
-const DESKTOP_BREAKPOINT = 1280;
+import {
+  DEFAULT_OPTIONS,
+  DESKTOP_BREAKPOINT,
+  TABLET_BREAKPOINT,
+} from './constants.js';
+import { DotNavigation } from './dot-navigation.js';
+import { getSlidesConfig } from './slide-settings.js';
 
 /**
  * Slider requirements:
@@ -34,9 +28,10 @@ export class Carousel {
     this.prevButton = null;
     this.nextButton = null;
     this.dotsRoot = null;
-    this.dotButtons = [];
+    this.dots = null;
     this.embla = null;
     this.logicalSlideCount = 0;
+    this.isInitialized = false;
 
     this.handlePrevClick = this.handlePrevClick.bind(this);
     this.handleNextClick = this.handleNextClick.bind(this);
@@ -44,12 +39,34 @@ export class Carousel {
     this.handleResize = this.handleResize.bind(this);
     this.handlePointerDown = this.handlePointerDown.bind(this);
     this.handlePointerUp = this.handlePointerUp.bind(this);
+    this.handleDotSelect = this.handleDotSelect.bind(this);
     this.syncUi = this.syncUi.bind(this);
   }
 
   init() {
-    if (!this.root) return;
+    if (!this.root || this.isInitialized) return;
 
+    const requiredElements = this.getRequiredElements();
+
+    this.viewport = requiredElements.viewport;
+    this.track = requiredElements.track;
+    this.prevButton = requiredElements.prevButton;
+    this.nextButton = requiredElements.nextButton;
+    this.dotsRoot = requiredElements.dotsRoot;
+    this.dots = new DotNavigation(this.dotsRoot, this.handleDotSelect);
+
+    this.logicalSlideCount = this.getSlidesCount();
+    this.updateSlidesToShow();
+    this.embla = EmblaCarousel(this.viewport, this.getEmblaOptions());
+
+    this.createDots();
+    this.bindEvents();
+    this.syncUi();
+
+    this.isInitialized = true;
+  }
+
+  getRequiredElements() {
     const requiredElements = {
       viewport: this.root.querySelector('[data-carousel-viewport]'),
       track: this.root.querySelector('.carousel-track'),
@@ -64,73 +81,57 @@ export class Carousel {
 
     if (missingElements.length > 0) {
       const message = `Carousel init failed: missing required element(s): ${missingElements.join(', ')}`;
+
       console.error(message, { root: this.root, missingElements });
       throw new Error(message);
     }
 
-    this.viewport = requiredElements.viewport;
-    this.track = requiredElements.track;
-    this.prevButton = requiredElements.prevButton;
-    this.nextButton = requiredElements.nextButton;
-    this.dotsRoot = requiredElements.dotsRoot;
-
-    this.logicalSlideCount = this.getSlidesCount();
-    this.updateSlidesToShow();
-    this.embla = EmblaCarousel(this.viewport, this.getEmblaOptions());
-
-    this.createDots();
-    this.bindEvents();
-    this.syncUi();
+    return /** @type {typeof requiredElements} */ (requiredElements);
   }
 
   bindEvents() {
-    this.withEmbla(embla => {
-      this.prevButton.addEventListener('click', this.handlePrevClick);
-      this.nextButton.addEventListener('click', this.handleNextClick);
+    if (!this.embla) return;
 
-      embla.on('pointerDown', this.handlePointerDown);
-      embla.on('pointerUp', this.handlePointerUp);
-      embla.on('select', this.syncUi);
-      embla.on('reInit', this.handleReInit);
+    this.prevButton.addEventListener('click', this.handlePrevClick);
+    this.nextButton.addEventListener('click', this.handleNextClick);
 
-      window.addEventListener('resize', this.handleResize, { passive: true });
-    });
+    this.embla.on('pointerDown', this.handlePointerDown);
+    this.embla.on('pointerUp', this.handlePointerUp);
+    this.embla.on('select', this.syncUi);
+    this.embla.on('reInit', this.handleReInit);
+
+    window.addEventListener('resize', this.handleResize, { passive: true });
+  }
+
+  unbindEvents() {
+    if (!this.embla) return;
+
+    this.prevButton.removeEventListener('click', this.handlePrevClick);
+    this.nextButton.removeEventListener('click', this.handleNextClick);
+
+    this.embla.off('pointerDown', this.handlePointerDown);
+    this.embla.off('pointerUp', this.handlePointerUp);
+    this.embla.off('select', this.syncUi);
+    this.embla.off('reInit', this.handleReInit);
+
+    window.removeEventListener('resize', this.handleResize);
   }
 
   withEmbla(callback) {
     if (!this.embla) return false;
+
     callback(this.embla);
-
     return true;
-  }
-
-  getSlidesConfig() {
-    const mobile = Number(
-      this.root.dataset.carouselSlidesMobile || this.options.slidesMobile
-    );
-
-    const tablet = Number(
-      this.root.dataset.carouselSlidesTablet || this.options.slidesTablet
-    );
-
-    const desktop = Number(
-      this.root.dataset.carouselSlidesDesktop || this.options.slidesDesktop
-    );
-
-    return {
-      mobile: Number.isNaN(mobile) ? DEFAULT_OPTIONS.slidesMobile : mobile,
-      tablet: Number.isNaN(tablet) ? DEFAULT_OPTIONS.slidesTablet : tablet,
-      desktop: Number.isNaN(desktop) ? DEFAULT_OPTIONS.slidesDesktop : desktop,
-    };
   }
 
   getSlidesCount() {
     if (!this.track) return 0;
+
     return this.track.children.length;
   }
 
   getCurrentSlidesToShow() {
-    const slides = this.getSlidesConfig();
+    const slides = getSlidesConfig(this.root, this.options);
 
     if (window.innerWidth >= DESKTOP_BREAKPOINT) {
       return slides.desktop;
@@ -145,6 +146,7 @@ export class Carousel {
 
   updateSlidesToShow() {
     const slidesToShow = this.getCurrentSlidesToShow();
+
     this.root.style.setProperty(
       '--carousel-slides-to-show',
       String(slidesToShow)
@@ -153,6 +155,7 @@ export class Carousel {
 
   shouldUseLoop() {
     if (!this.options.loop) return false;
+
     return this.logicalSlideCount > this.getCurrentSlidesToShow();
   }
 
@@ -196,8 +199,13 @@ export class Carousel {
   }
 
   handleReInit() {
+    this.logicalSlideCount = this.getSlidesCount();
     this.createDots();
     this.syncUi();
+  }
+
+  handleDotSelect(logicalIndex) {
+    this.scrollToLogical(logicalIndex);
   }
 
   createDots() {
@@ -206,19 +214,9 @@ export class Carousel {
       const dotsCount =
         this.logicalSlideCount > 0 ? this.logicalSlideCount : snapCount;
 
-      this.dotsRoot.textContent = '';
-      this.dotButtons = [];
+      if (!this.dots) return;
 
-      for (let index = 0; index < dotsCount; index += 1) {
-        const dotButton = document.createElement('button');
-
-        dotButton.type = 'button';
-        dotButton.className = 'carousel-dot';
-        dotButton.setAttribute('aria-label', `Go to slide ${index + 1}`);
-        dotButton.addEventListener('click', () => this.scrollToLogical(index));
-        this.dotsRoot.append(dotButton);
-        this.dotButtons.push(dotButton);
-      }
+      this.dots.render(dotsCount);
     });
   }
 
@@ -229,43 +227,43 @@ export class Carousel {
   syncUi() {
     this.withEmbla(embla => {
       const canScroll = embla.canScrollPrev() || embla.canScrollNext();
-      this.prevButton.disabled = !canScroll;
-      this.nextButton.disabled = !canScroll;
-
       const activeIndex = embla.selectedScrollSnap();
-      const logicalCount =
-        this.logicalSlideCount > 0
-          ? this.logicalSlideCount
-          : this.dotButtons.length;
+      let logicalCount = this.logicalSlideCount;
+
+      if (logicalCount <= 0 && this.dots) {
+        logicalCount = this.dots.getCount();
+      }
+
       const activeLogicalIndex =
         logicalCount > 0 ? activeIndex % logicalCount : activeIndex;
 
-      this.dotButtons.forEach((dotButton, index) => {
-        const isActive = index === activeLogicalIndex;
-        dotButton.classList.toggle('is-active', isActive);
-        dotButton.setAttribute('aria-current', isActive ? 'true' : 'false');
-      });
+      this.prevButton.disabled = !canScroll;
+      this.nextButton.disabled = !canScroll;
+
+      if (this.dots) {
+        this.dots.setActive(activeLogicalIndex);
+      }
     });
   }
 
   destroy() {
-    this.withEmbla(embla => {
-      this.prevButton.removeEventListener('click', this.handlePrevClick);
-      this.nextButton.removeEventListener('click', this.handleNextClick);
-      this.root.classList.remove('is-dragging');
+    if (!this.isInitialized) return;
 
-      embla.off('pointerDown', this.handlePointerDown);
-      embla.off('pointerUp', this.handlePointerUp);
-      embla.off('select', this.syncUi);
-      embla.off('reInit', this.handleReInit);
+    this.root.classList.remove('is-dragging');
+    this.unbindEvents();
 
-      window.removeEventListener('resize', this.handleResize);
-      embla.destroy();
+    if (this.dots) {
+      this.dots.destroy();
+      this.dots = null;
+    }
 
+    if (this.embla) {
+      this.embla.destroy();
       this.embla = null;
-      this.dotButtons = [];
-      this.logicalSlideCount = 0;
-    });
+    }
+
+    this.logicalSlideCount = 0;
+    this.isInitialized = false;
   }
 
   static initAll(selector = '[data-carousel]') {
@@ -273,6 +271,7 @@ export class Carousel {
 
     return [...roots].map(root => {
       const carousel = new Carousel(root);
+
       carousel.init();
       return carousel;
     });
