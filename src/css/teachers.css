@@ -1,0 +1,77 @@
+.teachers {
+    padding: 0;
+}
+
+/* Title of section and describe */
+.teachers-title {
+    text-align: center;
+    margin-bottom: 16px;
+    font-family: 'Manrope';
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 36px;
+    letter-spacing: -0.02em;
+    color: rgba(18, 20, 23, 1);
+}
+
+.describe {
+    text-align: center;
+    font-family: 'Manrope';
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 0;
+    color: rgba(18, 20, 23, 0.5);
+}
+
+/* Teachers list */
+.teachers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.teacher-maria {
+    margin-top: 40px;
+}
+
+.teacher-name {
+    text-align: center;
+    font-family: 'Manrope';
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 24px;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+    color: rgba(18, 20, 23, 1);
+}
+
+.img-teacher {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 150px;
+    margin-bottom: 16px;
+}
+
+.teachers-container {
+    margin: 0
+}
+
+/* Underspasing TEACHERS word */
+.teachers-title-span {
+    position: relative;
+    z-index: 1;
+}
+
+.teachers-title-span::after {
+    content: '';
+    border-radius: 8px;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 12px;
+    background-color: rgba(190, 232, 204, 1);
+    z-index: -1;
+}
