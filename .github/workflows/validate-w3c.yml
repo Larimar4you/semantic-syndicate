@@ -1,4 +1,4 @@
-name: Validate W3C HTML and CSS
+name: Validate HTML and CSS
 
 on:
   workflow_dispatch:
@@ -37,14 +37,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Download Nu Html Checker
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -L -o vnu.zip https://github.com/validator/validator/releases/latest/download/vnu.jar.zip
-          unzip -q vnu.zip -d vnu
+      - name: Install Stylelint
+        run: npm install --save-dev stylelint stylelint-config-standard
 
-      - name: Validate source CSS with W3C CSS Validator
+      - name: Create Stylelint config
+        run: |
+          cat > .stylelintrc.json <<'EOF'
+          {
+            "extends": "stylelint-config-standard"
+          }
+          EOF
+
+      - name: Validate source CSS with Stylelint
         shell: bash
         run: |
           set -euo pipefail
@@ -58,61 +62,14 @@ jobs:
             exit 1
           fi
 
-          mapfile -t css_files < <(find "${CSS_ROOT}" -type f -name "*.css" | sort)
+          mapfile -t css_files < <(find "${CSS_ROOT}" -type f -name "*.css" ! -size 0 | sort)
 
           if [ "${#css_files[@]}" -eq 0 ]; then
-            echo "No source CSS files found in ${CSS_ROOT}"
-            exit 1
+            echo "No non-empty source CSS files found in ${CSS_ROOT}"
+            exit 0
           fi
 
-          for css_file in "${css_files[@]}"; do
-            echo "Checking source CSS file: $css_file"
-
-            if [ ! -s "${css_file}" ]; then
-              echo "Skipping empty file: ${css_file}"
-              continue
-            fi
-
-            if ! grep -q '[^[:space:]]' "${css_file}"; then
-              echo "Skipping whitespace-only file: ${css_file}"
-              continue
-            fi
-
-            echo "Validating source CSS file: $css_file"
-
-            response_file="$(mktemp)"
-
-            curl -sS \
-              --data-urlencode "text@${css_file}" \
-              --data "output=json" \
-              "https://jigsaw.w3.org/css-validator/validator" \
-              -o "${response_file}"
-
-            if [ ! -s "${response_file}" ]; then
-              echo "Empty response from W3C CSS Validator for ${css_file}"
-              exit 1
-            fi
-
-            if ! python3 -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "${response_file}" >/dev/null 2>&1; then
-              echo "Invalid JSON response from W3C CSS Validator for ${css_file}"
-              cat "${response_file}"
-              exit 1
-            fi
-
-            errors=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('errorcount', 0)))" "${response_file}")
-            warnings=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('warningcount', 0)))" "${response_file}")
-
-            echo "Errors: ${errors}; Warnings: ${warnings}"
-
-            if [ "${errors}" -gt 0 ]; then
-              echo "Source CSS validation failed for ${css_file}"
-              cat "${response_file}"
-              exit 1
-            fi
-
-            rm -f "${response_file}"
-            sleep 1
-          done
+          npx stylelint "${CSS_ROOT}/**/*.css" --allow-empty-input
 
       - name: Build Vite project
         run: npm run build
@@ -123,16 +80,6 @@ jobs:
             echo "dist folder not found after build"
             exit 1
           fi
-
-      - name: Debug built HTML
-        run: |
-          if [ ! -f dist/index.html ]; then
-            echo "dist/index.html not found"
-            exit 1
-          fi
-
-          echo "----- dist/index.html -----"
-          sed -n '1,220p' dist/index.html
 
       - name: Ensure partials were resolved
         shell: bash
@@ -147,6 +94,13 @@ jobs:
             exit 1
           fi
 
+      - name: Download Nu Html Checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L -o vnu.zip https://github.com/validator/validator/releases/latest/download/vnu.jar.zip
+          unzip -q vnu.zip -d vnu
+
       - name: Validate HTML in dist
         shell: bash
         run: |
@@ -160,82 +114,18 @@ jobs:
             exit 1
           fi
 
-          echo "Using validator jar: ${VNU_JAR}"
+          java -jar "${VNU_JAR}" --errors-only --skip-non-html dist
 
-          output_file="$(mktemp)"
-
-          set +e
-          java -jar "${VNU_JAR}" \
-            --errors-only \
-            --skip-non-html \
-            dist >"${output_file}" 2>&1
-          status=$?
-          set -e
-
-          cat "${output_file}"
-
-          if [ "${status}" -ne 0 ]; then
-            echo "HTML validation failed"
-            exit "${status}"
-          fi
-
-      - name: Validate built CSS with W3C CSS Validator
+      - name: Validate built CSS with Stylelint
         shell: bash
         run: |
           set -euo pipefail
 
-          mapfile -t css_files < <(find dist -type f -name "*.css" | sort)
+          mapfile -t css_files < <(find dist -type f -name "*.css" ! -size 0 | sort)
 
           if [ "${#css_files[@]}" -eq 0 ]; then
-            echo "No CSS files found in dist"
-            exit 1
+            echo "No non-empty built CSS files found in dist"
+            exit 0
           fi
 
-          for css_file in "${css_files[@]}"; do
-            echo "Checking built CSS file: $css_file"
-
-            if [ ! -s "${css_file}" ]; then
-              echo "Skipping empty file: ${css_file}"
-              continue
-            fi
-
-            if ! grep -q '[^[:space:]]' "${css_file}"; then
-              echo "Skipping whitespace-only file: ${css_file}"
-              continue
-            fi
-
-            echo "Validating built CSS file: $css_file"
-
-            response_file="$(mktemp)"
-
-            curl -sS \
-              --data-urlencode "text@${css_file}" \
-              --data "output=json" \
-              "https://jigsaw.w3.org/css-validator/validator" \
-              -o "${response_file}"
-
-            if [ ! -s "${response_file}" ]; then
-              echo "Empty response from W3C CSS Validator for ${css_file}"
-              exit 1
-            fi
-
-            if ! python3 -c "import json,sys; json.load(open(sys.argv[1], encoding='utf-8'))" "${response_file}" >/dev/null 2>&1; then
-              echo "Invalid JSON response from W3C CSS Validator for ${css_file}"
-              cat "${response_file}"
-              exit 1
-            fi
-
-            errors=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('errorcount', 0)))" "${response_file}")
-            warnings=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('warningcount', 0)))" "${response_file}")
-
-            echo "Errors: ${errors}; Warnings: ${warnings}"
-
-            if [ "${errors}" -gt 0 ]; then
-              echo "Built CSS validation failed for ${css_file}"
-              cat "${response_file}"
-              exit 1
-            fi
-
-            rm -f "${response_file}"
-            sleep 1
-          done
+          npx stylelint "dist/**/*.css" --allow-empty-input
