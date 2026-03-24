@@ -165,8 +165,15 @@
   }
 
   .lessons-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     margin-top: 48px;
     gap: 16px;
+  }
+
+  .lessons-item {
+    flex: 0 0 calc(50% - 8px);
   }
 
   .lessons-name {
