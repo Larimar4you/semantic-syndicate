@@ -54,10 +54,7 @@ jobs:
 
       - name: Validate HTML in dist
         run: |
-          java -jar ./vnu/dist/vnu.jar \
-            --errors-only \
-            --skip-non-html \
-            dist | tee vnu-output.txt
+          java -jar ./vnu/dist/vnu.jar --errors-only --skip-non-html dist | tee vnu-output.txt
 
           if grep -E "Error:|Fatal Error:" vnu-output.txt > /dev/null; then
             echo "HTML validation failed"
@@ -92,24 +89,17 @@ jobs:
               exit 1
             fi
 
-            python3 -c '
-import json, sys
-path = sys.argv[1]
-with open(path, "r", encoding="utf-8") as f:
-    data = json.load(f)
+            errors=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('errorcount', 0)))" "${response_file}")
+            warnings=$(python3 -c "import json,sys; print(int(json.load(open(sys.argv[1], encoding='utf-8')).get('cssvalidation', {}).get('result', {}).get('warningcount', 0)))" "${response_file}")
 
-result = data.get("cssvalidation", {}).get("result", {})
-errors = int(result.get("errorcount", 0))
-warnings = int(result.get("warningcount", 0))
+            echo "Errors: ${errors}; Warnings: ${warnings}"
 
-print(f"Errors: {errors}; Warnings: {warnings}")
-
-if errors > 0:
-    print("CSS validation failed")
-    sys.exit(1)
-' "${response_file}"
+            if [ "${errors}" -gt 0 ]; then
+              echo "CSS validation failed"
+              cat "${response_file}"
+              exit 1
+            fi
 
             rm -f "${response_file}"
-
             sleep 1
           done
