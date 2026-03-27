@@ -7,7 +7,7 @@
 }
 
 .proposal-text {
-    margin-bottom: 40px;
+    margin-bottom: 65px;
     font-weight: 700;
     font-size: 38px;
     line-height: 1.05263;
@@ -35,13 +35,13 @@
 }
 
 .layer-1 {
-    background: #d4fde1;
-    transform: rotate(9deg);
+    background: rgba(255, 255, 255, 0.5);
+    transform:  rotate(11deg);
 }
 
 .layer-2 {
-    background: rgba(255, 255, 255, 0.5);
-    transform:  rotate(-11deg);
+    background: #d4fde1;
+    transform: rotate(-9deg);
 }
 
 .white-card {
@@ -92,7 +92,7 @@
     }
 
     .proposal-text {
-        margin-bottom: 32px;
+        margin-bottom: 83px;
         font-size: 60px;
         line-height: 1.16667;
     }
@@ -102,8 +102,12 @@
     }
 
     .layer-1 {
-        transform: rotate(10deg);
+        transform: translate(8px, 6px) rotate(11deg);
     }
+
+    .layer-2 {
+        transform: rotate(-10deg);
+}
 
     .white-card {
         padding: 64px 32px;
@@ -147,12 +151,16 @@
     }
 
     .proposal-text {
-        margin-bottom: 72px;
+        margin-bottom: 133px;
         max-width: 776px;
     }
 
     .layer-1 {
-        transform: rotate(8deg);
+        transform: scale(0.9873, 0.8532) rotate(11deg);
+    }
+
+    .layer-2 {
+        transform: translate(-10px, 8px) scale(1.0264, 0.9851) rotate(-8deg);
     }
 
     .white-card {
