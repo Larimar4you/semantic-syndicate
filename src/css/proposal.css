@@ -79,11 +79,7 @@
 }
 
 .proposal .button {
-    height: auto;
     width: 100%;
-    padding: 14px;
-    font-size: 14px;
-    line-height: 1.71429;
 }
 
 .card-image {
@@ -130,9 +126,6 @@
 
     .proposal .button {
         width: 306px;
-        padding: 16px;
-        font-size: 18px;
-        line-height: 1.55556;
     }
 
     .card-image {
