@@ -8,7 +8,6 @@
     padding: 0 128px;
 }
 
-
 .about_header {
     display: flex;
     flex-direction: column;
@@ -25,16 +24,26 @@
     letter-spacing: -0.02em;
     text-align: center;
     color: #121417;
-    margin: 0;
+    margin-bottom: 0;
 }
 
-.about_title-line {
+.about_title-accent {
+    position: relative;
+    display: inline-block;
+}
+
+.about_title-accent::after {
+    content: "";
     display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -4px;
     width: 62px;
     height: 20px;
     background-color: #bee8cc;
     border-radius: 8px;
-    margin-top: -14px;
+    z-index: -1;
 }
 
 .about_subtitle {
@@ -53,7 +62,7 @@
     display: grid;
     grid-template-columns: 1fr 310px;
     gap: 20px;
-    align-items: stretch;
+    align-items: end;
 }
 
 .about_list {
@@ -100,7 +109,7 @@
     width: 310px;
     min-height: 352px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     overflow: hidden;
 }
@@ -121,11 +130,6 @@
         padding: 0 32px;
     }
 
-    .about_title {
-        font-size: 40px;
-        line-height: 48px;
-    }
-
     .about_content {
         grid-template-columns: 1fr;
         gap: 16px;
@@ -139,16 +143,6 @@
     .about_item {
         min-height: 160px;
         border-radius: 30px;
-    }
-
-    .about_item-number {
-        font-size: 28px;
-        line-height: 32px;
-    }
-
-    .about_item-text {
-        font-size: 20px;
-        line-height: 24px;
     }
 
     .about_image-block {
@@ -184,7 +178,7 @@
     .about_title-line {
         width: 39px;
         height: 12px;
-        margin-top: -10px;
+        margin-top: -12px;
     }
 
     .about_subtitle {
@@ -208,16 +202,6 @@
         min-height: 160px;
         border-radius: 16px;
         padding: 24px 32px;
-    }
-
-    .about_item-number {
-        font-size: 28px;
-        line-height: 32px;
-    }
-
-    .about_item-text {
-        font-size: 20px;
-        line-height: 24px;
     }
 
     .about_image-block {
