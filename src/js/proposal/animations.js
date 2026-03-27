@@ -2,6 +2,7 @@ export const initScrollAnimations = () => {
   const proposalSection = document.querySelector('.proposal');
   const featuresList = document.querySelector('.proposal .features-list');
   const layers = document.querySelectorAll('.bg-layer');
+  const cardImage = document.querySelector('.proposal .card-image');
 
   if (!proposalSection || !featuresList) return;
 
@@ -11,6 +12,9 @@ export const initScrollAnimations = () => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('is-visible');
+
+          if (cardImage) cardImage.classList.add('is-visible');
+
           appearanceObserver.unobserve(entry.target);
         }
       });
