@@ -206,6 +206,29 @@ export const TRANSLATIONS = Object.freeze({
           "I love the dynamic and interactive teaching methods used here. It's a great place to learn English in a fun and effective way. I have definitely seen a big improvement in my language skills.",
       },
     },
+    footer: {
+      contacts: {
+        phoneLabel: 'Phone number:',
+        addressLabel: 'Address:',
+      },
+      navigation: {
+        about: 'About us',
+        lessons: 'Our lessons',
+        teachers: 'Teachers',
+        reviews: 'Reviews',
+        contact: 'Contact us',
+      },
+      social: {
+        facebookLabel: 'Link to facebook.com',
+        instagramLabel: 'Link to instagram.com',
+        youtubeLabel: 'Link to youtube.com',
+      },
+      legal: {
+        copyrightSuffix: 'English Excellence. All rights reserved.',
+        privacy: 'Privacy Policy',
+        terms: 'Terms of Service',
+      },
+    },
   },
   [SUPPORTED_LANGUAGE.UA]: {
     header: {
@@ -405,6 +428,29 @@ export const TRANSLATIONS = Object.freeze({
           'Школа дає відмінний баланс між теорією мови та практичними вправами. Персональний фідбек від викладачів допоміг мені суттєво підтягнути слабкі місця.',
         victoria:
           'Мені подобаються динамічні й інтерактивні методи викладання. Це чудове місце, щоб вивчати англійську легко та ефективно. Я точно бачу великий прогрес у своїх мовних навичках.',
+      },
+    },
+    footer: {
+      contacts: {
+        phoneLabel: 'Номер телефону:',
+        addressLabel: 'Адреса:',
+      },
+      navigation: {
+        about: 'Про нас',
+        lessons: 'Наші уроки',
+        teachers: 'Викладачі',
+        reviews: 'Відгуки',
+        contact: 'Контакти',
+      },
+      social: {
+        facebookLabel: 'Посилання на facebook.com',
+        instagramLabel: 'Посилання на instagram.com',
+        youtubeLabel: 'Посилання на youtube.com',
+      },
+      legal: {
+        copyrightSuffix: 'English Excellence. Усі права захищено.',
+        privacy: 'Політика конфіденційності',
+        terms: 'Умови використання',
       },
     },
   },
